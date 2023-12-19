@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Http\Requests\MyRequest;
 use Illuminate\Validation\Rule;
 
 class ProductsController extends Controller
@@ -13,7 +14,7 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
+        $products = Product::latest()->filter(request(['search','category']))->paginate(2)->withQueryString();
 
         return response()->json($products);
     }
@@ -29,19 +30,13 @@ class ProductsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(MyRequest $myRequest)     // handle validation failed !!!!!!!!
     {
-        //dd(request());
-        $attributes = request()->validate([
-            's_name' => ['required','min:3','max:255'],
-            't_name'=> ['required','min:3','max:255'],
-            'category'=> ['required','min:3','max:255'],
-            'company_name'=> ['required','min:3','max:255'],
-            'amount'=> ['required'],
-            'ending_date'=> ['required'],
-            'price'=> ['required']
-        ]);
-       // dd($attributes);
+        //dd($myRequest->all());
+        $myRequest->validate;
+
+        $attributes = $myRequest->all();
+        //dd($attributes);
         Product::create($attributes);
         return response()->json(['message' => 'success']);
     }
@@ -77,6 +72,8 @@ class ProductsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::firstWhere('id',$id);
+        $product->delete();
+        return response()->json(['message' => 'success']);
     }
 }
