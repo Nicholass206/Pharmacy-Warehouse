@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -31,6 +31,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'access_token',
     ];
 
     /**
@@ -43,11 +44,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    function pharmacists() {
-        return $this->hasMany(Pharmacist::class);
+    function orders() {
+        return $this->hasMany(Order::class);
     }
 
-    function owners() {
-        return $this->hasMany(Owner::class);
+    function storehouse() {
+        return $this->hasOne(Storehouse::class);
     }
 }

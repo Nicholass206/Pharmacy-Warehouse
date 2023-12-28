@@ -25,4 +25,8 @@ class Product extends Model
         => $query->where('category',$category)
     );
     }
+
+    public function storehouse(){
+        return $this->belongsTo(Storehouse::class);
+    }
 }

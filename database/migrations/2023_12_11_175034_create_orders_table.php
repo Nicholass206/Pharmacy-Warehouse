@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('state');
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('storehouse_id');
+            $table->foreignId('user_id');
+            $table->foreignId('storehouse_id');
             $table->timestamps();
         });
     }

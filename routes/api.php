@@ -23,16 +23,26 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 //Route::resource('budy',OwnerController::class);
 
-Route::get('products',[ProductsController::class,'index']); // show all
-Route::get('products/{id}',[ProductsController::class,'show']); // show one
-Route::delete('products/{id}',[ProductsController::class,'destroy']); // delete
+Route::get('products',[ProductsController::class,'index'])->middleware('auth'); // show all
+Route::get('products/{id}',[ProductsController::class,'show'])->middleware('auth'); // show one
+Route::delete('products/{id}',[ProductsController::class,'destroy'])->middleware('auth'); // delete
 Route::post('products',[ProductsController::class,'store']); // create
 
 
 Route::post('register',[SessionsController::class , 'create']); // register (working)
-Route::post('login',[SessionsController::class , 'store']); // login (working to be)
+Route::post('login',[SessionsController::class , 'store'])->middleware('guest')->name('login'); // login (working to be)
+Route::post('logout',[SessionsController::class , 'destroy'])->middleware('auth:api'); // login (working to be)
 
 
+
+
+/*
+  <<<<< TO DO LIST>>>>>>>>>>
+
+  install jwt pack
+  edit session controller
+
+*/
 /*
     RESPONSE FORM :
     [

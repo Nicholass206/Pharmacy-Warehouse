@@ -9,6 +9,7 @@ use App\Http\Requests\sessionRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use Validator;
 
 
 class SessionsCOntroller extends Controller
@@ -37,32 +38,75 @@ class SessionsCOntroller extends Controller
     //     return response()->json(['message' => 'success']);
     // }
 
-    public function store(sessionRequest $myRequest) {
+    public function store(Request $request) {
         //dd($myRequest);
-        $myRequest->validate;
+        $attributes = $request->validate([
+            'phone_number' => ['required','exists:users,phone_number'],
+            'password' => 'required'
+        ]);
 
-        $attributes = $myRequest->all();
-        //dd($attributes);
+        //dd($attributes->validated());
 
-        if (! auth()->attempt($attributes)) {
-            throw ValidationException::withMessages(['error'=> 'your provided credentials cannot be verified .']);
+        if (!auth()->attempt($attributes)) {
+            return response()->json(['error'=> 'your provided credentials cannot be verified .'],422);
         }
 
-        session()->regenerate();
+        //dd($token);
 
-        return response()->json(['message' => 'success']);
+        $user = $request->user();
+        $accessToken = $user->createToken('access_token');
+
+        $user['remember_token'] = $accessToken;
+
+        $accessToken->token->save();
+
+        return response()->json([
+            'user' => auth()->user(),
+            'access_token' => $accessToken,
+            'token_type' => 'Bearer'
+     ]);
     }
 
-    public function create(sessionRequest $myRequest) {
+    public function create(Request $request) {
 
-        $myRequest->validate;
+        $validator = Validator::make($request->all(),[
+            'name' => 'required',
+            'phone_number' => ['required','unique:users,phone_number'],
+            'password' => 'required'
+        ]);
 
-        $attributes = $myRequest->all();
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(),400);
+        }
+
         //dd($attributes);
-        $user = User::create($attributes);
+        $user = User::create(array_merge(
+            $validator->validated(),
+            ['password' => bcrypt($request->password)]
+        ));
+
+        //$user['password'] = bcrypt($request->password);
+
+
+        $accessToken = $user->createToken('access_token')->accessToken;
+
+        //dd($accessToken);
+
+        $user['remember_token'] = $accessToken;
 
         auth()->login($user);
 
-        return response()->json(['message' => 'success']);
+        return response()->json([
+            'message' => 'success',
+            'access_token' => $accessToken,
+            'token_type' => 'Bearer'
+    ]);
+    }
+
+    public function destroy(){
+
+        Auth::user()->token()->revoke();
+        return response()->json(['message' => 'LoggedOut successfully']);
+
     }
 }

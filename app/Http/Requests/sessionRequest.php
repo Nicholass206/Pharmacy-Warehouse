@@ -25,7 +25,6 @@ class sessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required',
             'phone_number' => 'required',
             'password' => 'required'
         ];
